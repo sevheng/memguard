@@ -19,7 +19,3 @@ rpm: srpm
 clean:
 	rm -rf $(RPMBUILD)
 	cargo clean
-
-.PHONY: rpm-system-tune
-rpm-system-tune: srpm
-	rpmbuild --rebuild $(RPMBUILD)/SRPMS/memguard-$(VERSION)-$(RELEASE).*.src.rpm
