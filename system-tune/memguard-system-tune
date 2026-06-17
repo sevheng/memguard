@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-LOG() { echo "[memguard-system-tune] $*"; }
-WARN() { echo "[memguard-system-tune] WARN: $*" >&2; }
+LOG() { echo "[memguard-system-tune]" "$*"; }
+WARN() { echo "[memguard-system-tune] WARN:" "$*" >&2; }
 
 if [[ $EUID -ne 0 ]]; then
     echo "memguard-system-tune must be run as root" >&2
@@ -12,7 +12,7 @@ fi
 # 1. I/O scheduler -> bfq
 for sched in /sys/block/*/queue/scheduler; do
     if [[ -f "$sched" ]]; then
-        dev=$(basename "$(dirname "$sched")")
+        dev="$(basename "$(dirname "$sched")")"
         if grep -q 'bfq' "$sched"; then
             if echo bfq > "$sched" 2>/dev/null; then
                 LOG "set $dev scheduler to bfq"
@@ -92,7 +92,8 @@ if [[ -f /etc/fstab ]]; then
             if ((fs=="ext4" || fs=="xfs" || fs=="btrfs") && \
                 opts !~ /(^|,)atime(=|$|,)/ && \
                 opts !~ /(^|,)noatime($|,)/ && \
-                opts !~ /(^|,)relatime($|,)/) {
+                opts !~ /(^|,)relatime($|,)/ && \
+                opts !~ /(^|,)strictatime($|,)/) {
                 if (opts == "") $4 = "noatime"
                 else $4 = opts ",noatime"
             }
