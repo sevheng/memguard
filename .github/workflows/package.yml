@@ -1,0 +1,26 @@
+name: package
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  srpm:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: dnf install -y make git rpm-build rpmdevtools
+
+      - name: Build SRPM
+        run: make srpm
+
+      - name: Upload SRPM
+        uses: actions/upload-artifact@v4
+        with:
+          name: srpm
+          path: ~/rpmbuild/SRPMS/*.src.rpm
