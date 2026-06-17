@@ -46,6 +46,17 @@ impl Inventory {
         apps
     }
 
+    pub fn scan_at(
+        &self,
+        root: &Path,
+        active_app_id: Option<&str>,
+        shell_pid: Option<u32>,
+    ) -> Vec<CgroupApp> {
+        let mut apps = Vec::new();
+        self.scan_dir(root, active_app_id, shell_pid, &mut apps);
+        apps
+    }
+
     fn scan_dir(
         &self,
         dir: &Path,

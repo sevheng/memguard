@@ -81,3 +81,23 @@ fn test_app_id_for_pid() {
     let app_id = Inventory::app_id_for_pid(1234, &proc_root, &cgroup_root).unwrap();
     assert_eq!(app_id, "firefox");
 }
+
+#[test]
+fn test_scan_at_finds_scopes_outside_user_slice() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let root = tmp.path();
+    let proc_root = root.join("proc");
+    fs::create_dir(&proc_root).unwrap();
+    let scope = root.join("bg.scope");
+    fs::create_dir(&scope).unwrap();
+    fs::write(scope.join("cgroup.procs"), "1\n").unwrap();
+    fs::create_dir(proc_root.join("1")).unwrap();
+    fs::write(proc_root.join("1/comm"), "bg\n").unwrap();
+    fs::write(proc_root.join("1/statm"), "0 10 0 0 0 0 0\n").unwrap();
+
+    let inventory = Inventory::new(root, &proc_root);
+    let apps = inventory.scan_at(root, None, None);
+    assert_eq!(apps.len(), 1);
+    assert_eq!(apps[0].app_id, "bg");
+    assert_eq!(apps[0].class, AppClass::Background);
+}
