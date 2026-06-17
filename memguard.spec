@@ -30,7 +30,8 @@ install -D -p -m 0644 README.md %{buildroot}%{_docdir}/%{name}/README.md
 install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
 install -D -p -m 0755 system-tune/memguard-system-tune %{buildroot}%{_bindir}/memguard-system-tune
 install -D -p -m 0644 system-tune/memguard-system-tune.service %{buildroot}%{_unitdir}/memguard-system-tune.service
-install -D -p -m 0644 system-tune/README.md %{buildroot}%{_docdir}/memguard-system-tune/README.md
+install -D -p -m 0644 system-tune/README.md %{buildroot}%{_docdir}/%{name}-system-tune/README.md
+install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}-system-tune/LICENSE
 install -d -m 0755 %{buildroot}%{_docdir}/%{name}/docs
 cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 
@@ -48,6 +49,8 @@ Summary:        Static system tuning for memguard desktops
 BuildArch:      noarch
 Requires:       systemd
 Requires:       util-linux
+Requires:       bash
+Recommends:     ananicy-cpp
 
 %description system-tune
 One-time system tuning helper for low-end desktops using memguard. Sets the
@@ -73,6 +76,7 @@ adds noatime to fstab.
 %{_docdir}/%{name}/docs/
 
 %files system-tune
+%license LICENSE
 %{_bindir}/memguard-system-tune
 %{_unitdir}/memguard-system-tune.service
-%{_docdir}/memguard-system-tune/README.md
+%{_docdir}/%{name}-system-tune/README.md

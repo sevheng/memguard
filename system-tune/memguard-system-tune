@@ -26,23 +26,14 @@ for sched in /sys/block/*/queue/scheduler; do
 done
 
 # 2. ananicy-cpp
-if command -v dnf >/dev/null 2>&1; then
-    if ! rpm -q ananicy-cpp >/dev/null 2>&1; then
-        if dnf install -y ananicy-cpp; then
-            LOG "installed ananicy-cpp"
-        else
-            WARN "failed to install ananicy-cpp"
-        fi
-    else
-        LOG "ananicy-cpp already installed"
-    fi
+if ! rpm -q ananicy-cpp >/dev/null 2>&1; then
+    WARN "ananicy-cpp is not installed; skipping"
+else
     if systemctl enable --now ananicy-cpp.service; then
         LOG "enabled ananicy-cpp.service"
     else
         WARN "failed to enable ananicy-cpp.service"
     fi
-else
-    WARN "dnf not available; skipping ananicy-cpp"
 fi
 
 # 3. zram via systemd-zram-generator

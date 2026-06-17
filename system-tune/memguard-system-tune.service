@@ -1,7 +1,5 @@
 [Unit]
 Description=One-time memguard system tuning
-After=multi-user.target
-
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/memguard-system-tune
