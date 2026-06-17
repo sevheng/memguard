@@ -113,6 +113,54 @@ impl Inventory {
         let rss_pages: u64 = parts.nth(1).and_then(|s| s.parse().ok()).unwrap_or(0);
         rss_pages * 4096
     }
+
+    pub fn app_id_for_pid(
+        pid: u32,
+        proc_root: &Path,
+        cgroup_root: &Path,
+    ) -> anyhow::Result<String> {
+        let comm = std::fs::read_to_string(proc_root.join(format!("{}/comm", pid)))?;
+        let comm = comm.trim().to_string();
+
+        if let Some(cgroup) = Self::find_cgroup_for_pid(cgroup_root, pid) {
+            let pids = read_pids(&cgroup);
+            if pids.contains(&pid) {
+                return Ok(Self::leading_process_name_for_pids(proc_root, &pids)
+                    .unwrap_or(comm));
+            }
+        }
+
+        Ok(comm)
+    }
+
+    fn find_cgroup_for_pid(cgroup_root: &Path, pid: u32) -> Option<PathBuf> {
+        Self::scan_dir_for_pid(cgroup_root, pid)
+    }
+
+    fn scan_dir_for_pid(dir: &Path, pid: u32) -> Option<PathBuf> {
+        let Ok(entries) = std::fs::read_dir(dir) else { return None };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                if let Some(found) = Self::scan_dir_for_pid(&path, pid) {
+                    return Some(found);
+                }
+            }
+            if path.file_name()? == "cgroup.procs" {
+                let content = std::fs::read_to_string(&path).unwrap_or_default();
+                if content.lines().any(|l| l.trim() == pid.to_string()) {
+                    return Some(path.parent()?.to_path_buf());
+                }
+            }
+        }
+        None
+    }
+
+    fn leading_process_name_for_pids(proc_root: &Path, pids: &[u32]) -> Option<String> {
+        let first = pids.first()?;
+        let comm = std::fs::read_to_string(proc_root.join(format!("{}/comm", first))).ok()?;
+        Some(comm.trim().to_string())
+    }
 }
 
 fn read_pids(path: &Path) -> Vec<u32> {

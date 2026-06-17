@@ -60,3 +60,24 @@ fn test_inventory_classifies_background_and_shell() {
     assert_eq!(bg.class, AppClass::Background);
     assert_eq!(bg.rss_bytes, 100 * 4096 * 2);
 }
+
+#[test]
+fn test_app_id_for_pid() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    let cgroup_root = tmp.path().join("cgroup");
+    let proc_root = tmp.path().join("proc");
+    fs::create_dir(&cgroup_root).unwrap();
+    fs::create_dir(&proc_root).unwrap();
+
+    make_fake_cgroup(
+        &cgroup_root,
+        &proc_root,
+        "user.slice/user-1000.slice/session-1.scope",
+        &[1234],
+        "firefox",
+        100,
+    );
+
+    let app_id = Inventory::app_id_for_pid(1234, &proc_root, &cgroup_root).unwrap();
+    assert_eq!(app_id, "firefox");
+}
