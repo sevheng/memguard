@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
         config.pressure.critical_some_avg10,
         config.pressure.critical_full_avg10,
     );
-    let desktop = Desktop::new();
+    let desktop = Desktop::new("/run/systemd/sessions");
     let inventory = Inventory::new("/sys/fs/cgroup", "/proc");
     let actor = Actor::new("/sys/fs/cgroup");
     let policy = Policy::new(config.policy.freeze_on_critical);
@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     loop {
         tick.tick().await;
 
-        let state = desktop.discover();
+        let state = desktop.discover().await;
         let apps = inventory.scan(state.active_app_id.as_deref(), state.shell_pid);
         let level = pressure.level();
 
