@@ -1,6 +1,8 @@
 use memguard::actor::Actor;
+use memguard::events::{Event, VecEventLog};
 use memguard::policy::Action;
 use std::fs;
+use std::sync::Arc;
 
 #[test]
 fn test_actor_freezes_cgroup() {
@@ -9,7 +11,8 @@ fn test_actor_freezes_cgroup() {
     fs::create_dir(&cgroup).unwrap();
     fs::write(cgroup.join("cgroup.freeze"), "0").unwrap();
 
-    let actor = Actor::new(tmp.path());
+    let log = Arc::new(VecEventLog::default());
+    let actor = Actor::new(tmp.path(), log.clone());
     actor
         .execute(&Action::Freeze {
             cgroup: cgroup.clone(),
@@ -18,6 +21,7 @@ fn test_actor_freezes_cgroup() {
 
     let val = fs::read_to_string(cgroup.join("cgroup.freeze")).unwrap();
     assert_eq!(val.trim(), "1");
+    assert!(log.events().iter().any(|e| matches!(e, Event::AppFrozen { .. })));
 }
 
 #[test]
@@ -27,7 +31,8 @@ fn test_actor_throttles_cpu() {
     fs::create_dir(&cgroup).unwrap();
     fs::write(cgroup.join("cpu.max"), "max").unwrap();
 
-    let actor = Actor::new(tmp.path());
+    let log = Arc::new(VecEventLog::default());
+    let actor = Actor::new(tmp.path(), log.clone());
     actor
         .execute(&Action::Throttle {
             cgroup: cgroup.clone(),
@@ -36,4 +41,5 @@ fn test_actor_throttles_cpu() {
 
     let val = fs::read_to_string(cgroup.join("cpu.max")).unwrap();
     assert_eq!(val.trim(), "50000 100000");
+    assert!(log.events().iter().any(|e| matches!(e, Event::AppThrottled { .. })));
 }

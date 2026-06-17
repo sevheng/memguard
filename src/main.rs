@@ -1,10 +1,12 @@
 use memguard::actor::Actor;
 use memguard::config::Config;
 use memguard::desktop::Desktop;
+use memguard::events::{Event, EventLog, FileEventLog, NullEventLog};
 use memguard::inventory::Inventory;
 use memguard::policy::{Action, Policy};
 use memguard::pressure::{PressureLevel, PressureMonitor};
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::interval;
 use tracing::{info, warn};
@@ -14,6 +16,18 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let config = Config::load_or_default(std::path::Path::new("/etc/memguard/config.toml"));
+
+    let event_log: Arc<dyn EventLog> = match FileEventLog::new(&config.events.log_path) {
+        Ok(log) => Arc::new(log),
+        Err(e) => {
+            warn!(
+                "failed to create event log at {}: {e}",
+                config.events.log_path
+            );
+            Arc::new(NullEventLog)
+        }
+    };
+
     let pressure = PressureMonitor::new(
         "/proc/pressure/memory",
         config.pressure.warning_some_avg10,
@@ -22,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
     );
     let desktop = Desktop::new(&config.desktop.session_dir);
     let inventory = Inventory::new("/sys/fs/cgroup", "/proc");
-    let actor = Actor::new("/sys/fs/cgroup");
+    let actor = Actor::new("/sys/fs/cgroup", event_log.clone());
     let policy = Policy::new(config.policy.freeze_on_critical);
 
     let mut frozen: Vec<PathBuf> = Vec::new();
@@ -37,6 +51,9 @@ async fn main() -> anyhow::Result<()> {
         let level = pressure.level();
 
         info!("pressure={:?} apps={}", level, apps.len());
+        event_log.log(Event::PressureChanged {
+            level: format!("{:?}", level),
+        });
 
         match level {
             PressureLevel::Normal => {

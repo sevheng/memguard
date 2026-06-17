@@ -1,8 +1,10 @@
 use memguard::actor::Actor;
+use memguard::events::NullEventLog;
 use memguard::inventory::{AppClass, Inventory};
 use memguard::policy::{Action, Policy};
 use memguard::pressure::{classify, parse_pressure, PressureLevel};
 use std::fs;
+use std::sync::Arc;
 
 #[test]
 fn test_critical_pressure_freezes_background() {
@@ -35,7 +37,7 @@ fn test_critical_pressure_freezes_background() {
     assert_eq!(level, PressureLevel::Critical);
 
     let actions = policy.decide(level, &apps, &[]);
-    let actor = Actor::new(&cgroup_root);
+    let actor = Actor::new(&cgroup_root, Arc::new(NullEventLog));
     for action in &actions {
         actor.execute(action).unwrap();
     }
