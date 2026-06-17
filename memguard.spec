@@ -28,6 +28,8 @@ install -D -p -m 0644 dbus/memguard.conf %{buildroot}%{_datadir}/dbus-1/system.d
 install -D -p -m 0644 config.toml %{buildroot}%{_sysconfdir}/memguard/config.toml
 install -D -p -m 0644 README.md %{buildroot}%{_docdir}/%{name}/README.md
 install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
+install -d -m 0755 %{buildroot}%{_docdir}/%{name}/docs
+cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 
 %post
 %systemd_post memguard.service
@@ -45,3 +47,4 @@ install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
 %{_unitdir}/memguard.service
 %{_datadir}/dbus-1/system.d/memguard.conf
 %config(noreplace) %{_sysconfdir}/memguard/config.toml
+%{_docdir}/%{name}/docs/
