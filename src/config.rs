@@ -8,6 +8,8 @@ pub struct Config {
     pub policy: PolicyConfig,
     #[serde(default)]
     pub desktop: DesktopConfig,
+    #[serde(default)]
+    pub events: EventsConfig,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -64,6 +66,20 @@ impl Default for DesktopConfig {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct EventsConfig {
+    pub log_path: String,
+}
+
+impl Default for EventsConfig {
+    fn default() -> Self {
+        Self {
+            log_path: "/var/log/memguard/events.jsonl".to_string(),
+        }
+    }
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -82,6 +98,7 @@ impl Default for Config {
                 supported: vec!["gnome".to_string(), "kde".to_string()],
                 session_dir: "/run/systemd/sessions".to_string(),
             },
+            events: EventsConfig::default(),
         }
     }
 }

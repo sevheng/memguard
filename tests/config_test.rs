@@ -34,6 +34,12 @@ supported = ["gnome"]
 }
 
 #[test]
+fn test_default_events_config() {
+    let cfg = Config::default();
+    assert_eq!(cfg.events.log_path, "/var/log/memguard/events.jsonl");
+}
+
+#[test]
 fn test_load_or_default_missing_uses_default() {
     let path = std::path::Path::new("/nonexistent/memguard/config.toml");
     let cfg = Config::load_or_default(path);
