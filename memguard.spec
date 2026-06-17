@@ -28,6 +28,9 @@ install -D -p -m 0644 dbus/memguard.conf %{buildroot}%{_datadir}/dbus-1/system.d
 install -D -p -m 0644 config.toml %{buildroot}%{_sysconfdir}/memguard/config.toml
 install -D -p -m 0644 README.md %{buildroot}%{_docdir}/%{name}/README.md
 install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
+install -D -p -m 0755 system-tune/memguard-system-tune %{buildroot}%{_bindir}/memguard-system-tune
+install -D -p -m 0644 system-tune/memguard-system-tune.service %{buildroot}%{_unitdir}/memguard-system-tune.service
+install -D -p -m 0644 system-tune/README.md %{buildroot}%{_docdir}/memguard-system-tune/README.md
 install -d -m 0755 %{buildroot}%{_docdir}/%{name}/docs
 cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 
@@ -40,6 +43,26 @@ cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 %postun
 %systemd_postun memguard.service
 
+%package system-tune
+Summary:        Static system tuning for memguard desktops
+BuildArch:      noarch
+Requires:       systemd
+Requires:       util-linux
+
+%description system-tune
+One-time system tuning helper for low-end desktops using memguard. Sets the
+I/O scheduler to bfq, enables ananicy-cpp, configures zram, runs fstrim, and
+adds noatime to fstab.
+
+%post system-tune
+%systemd_post memguard-system-tune.service
+
+%preun system-tune
+%systemd_preun memguard-system-tune.service
+
+%postun system-tune
+%systemd_postun memguard-system-tune.service
+
 %files
 %license LICENSE
 %doc README.md
@@ -48,3 +71,8 @@ cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 %{_datadir}/dbus-1/system.d/memguard.conf
 %config(noreplace) %{_sysconfdir}/memguard/config.toml
 %{_docdir}/%{name}/docs/
+
+%files system-tune
+%{_bindir}/memguard-system-tune
+%{_unitdir}/memguard-system-tune.service
+%{_docdir}/memguard-system-tune/README.md
