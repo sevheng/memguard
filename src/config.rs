@@ -92,4 +92,17 @@ impl Config {
         let cfg: Config = toml::from_str(&content)?;
         Ok(cfg)
     }
+
+    pub fn load_or_default(path: &std::path::Path) -> Self {
+        if !path.exists() {
+            return Self::default();
+        }
+        match Self::load(path) {
+            Ok(cfg) => cfg,
+            Err(e) => {
+                tracing::warn!("failed to load config from {}: {e}", path.display());
+                Self::default()
+            }
+        }
+    }
 }

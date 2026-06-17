@@ -13,7 +13,7 @@ use tracing::{info, warn};
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let config = Config::default();
+    let config = Config::load_or_default(std::path::Path::new("/etc/memguard/config.toml"));
     let pressure = PressureMonitor::new(
         "/proc/pressure/memory",
         config.pressure.warning_some_avg10,
