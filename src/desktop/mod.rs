@@ -1,3 +1,4 @@
+use crate::inventory::Inventory;
 use std::path::PathBuf;
 
 pub mod detector;
@@ -48,13 +49,20 @@ impl Desktop {
             }
         };
 
-        let _active_pid = match de {
+        let active_pid = match de {
             DesktopEnvironment::Gnome => gnome::active_pid(&session.bus_address).await.ok(),
             DesktopEnvironment::Kde => kde::active_pid(&session.bus_address).await.ok(),
             DesktopEnvironment::Unknown => None,
         };
 
-        // active_app_id mapping will be added after Inventory::app_id_for_pid is implemented.
+        if let Some(pid) = active_pid {
+            state.active_app_id = Inventory::app_id_for_pid(
+                pid,
+                std::path::Path::new("/proc"),
+                std::path::Path::new("/sys/fs/cgroup"),
+            )
+            .ok();
+        }
 
         state
     }

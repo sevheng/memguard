@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
         config.pressure.critical_some_avg10,
         config.pressure.critical_full_avg10,
     );
-    let desktop = Desktop::new("/run/systemd/sessions");
+    let desktop = Desktop::new(&config.desktop.session_dir);
     let inventory = Inventory::new("/sys/fs/cgroup", "/proc");
     let actor = Actor::new("/sys/fs/cgroup");
     let policy = Policy::new(config.policy.freeze_on_critical);

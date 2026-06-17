@@ -52,12 +52,14 @@ impl Default for PolicyConfig {
 #[serde(default)]
 pub struct DesktopConfig {
     pub supported: Vec<String>,
+    pub session_dir: String,
 }
 
 impl Default for DesktopConfig {
     fn default() -> Self {
         Self {
             supported: vec!["gnome".to_string(), "kde".to_string()],
+            session_dir: "/run/systemd/sessions".to_string(),
         }
     }
 }
@@ -78,6 +80,7 @@ impl Default for Config {
             },
             desktop: DesktopConfig {
                 supported: vec!["gnome".to_string(), "kde".to_string()],
+                session_dir: "/run/systemd/sessions".to_string(),
             },
         }
     }
