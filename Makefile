@@ -9,7 +9,7 @@ all:
 	cargo build --release -p memguard
 
 srpm:
-	mkdir -p $(RPMBUILD)/{SOURCES,SRPMS}
+	mkdir -p $(RPMBUILD)/SOURCES $(RPMBUILD)/SRPMS
 	git archive --prefix=memguard-$(VERSION)/ HEAD | gzip > $(RPMBUILD)/SOURCES/memguard-$(VERSION).tar.gz
 	rpmbuild -bs --define "_topdir $(RPMBUILD)" memguard.spec
 
