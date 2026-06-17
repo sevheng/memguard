@@ -8,27 +8,36 @@
 
 **Tech Stack:** Rust, tokio, serde, toml, tracing, thiserror, tempfile (dev). `zbus` will be added in Phase 2 for D-Bus active-window queries.
 
+> **Path note:** The Rust crate lives in the `memguard/` subfolder. All file paths in the tasks below (e.g. `Cargo.toml`, `src/...`, `tests/...`) are relative to that crate directory unless prefixed otherwise.
+
 ---
 
 ## File Structure
 
 ```
-memguard/
-├── Cargo.toml
-├── memguard.service
-├── src/
-│   ├── main.rs          # daemon entry point, async runtime, top-level loop
-│   ├── lib.rs           # public module re-exports for integration tests
-│   ├── config.rs        # Config struct, defaults, file parsing
-│   ├── pressure.rs      # PSI parser and pressure-level detector
-│   ├── desktop.rs       # logind session + D-Bus active-window discovery
-│   ├── inventory.rs     # cgroup scanner and app classification
-│   ├── policy.rs        # decision engine: what to freeze/throttle/kill
-│   └── actor.rs         # cgroup/oom_score_adj executor
-└── tests/
-    ├── pressure_test.rs
-    ├── policy_test.rs
-    └── actor_test.rs
+memguard/                       # repo root
+├── project-purpose.md
+├── docs/
+│   └── superpowers/
+│       ├── specs/
+│       └── plans/
+├── .github/workflows/ci.yml
+└── memguard/                   # Rust crate
+    ├── Cargo.toml
+    ├── memguard.service
+    ├── src/
+    │   ├── main.rs          # daemon entry point, async runtime, top-level loop
+    │   ├── lib.rs           # public module re-exports for integration tests
+    │   ├── config.rs        # Config struct, defaults, file parsing
+    │   ├── pressure.rs      # PSI parser and pressure-level detector
+    │   ├── desktop.rs       # logind session + D-Bus active-window discovery
+    │   ├── inventory.rs     # cgroup scanner and app classification
+    │   ├── policy.rs        # decision engine: what to freeze/throttle/kill
+    │   └── actor.rs         # cgroup/oom_score_adj executor
+    └── tests/
+        ├── pressure_test.rs
+        ├── policy_test.rs
+        └── actor_test.rs
 ```
 
 ---
