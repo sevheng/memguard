@@ -73,7 +73,7 @@ fn write_pressure(path: &Path, some_avg10: f64, full_avg10: f64) {
 fn stress_test_protects_shell_and_freezes_background() {
     let mut cg = TestCgroup::new().unwrap();
     let shell_pid = cg.spawn_scope("shell.scope").unwrap();
-    let bg_pid = cg.spawn_scope("background.scope").unwrap();
+    let _bg_pid = cg.spawn_scope("background.scope").unwrap();
 
     let tmp = tempfile::TempDir::new().unwrap();
     let pressure_path = tmp.path().join("pressure");
@@ -141,12 +141,13 @@ fn stress_test_protects_shell_and_freezes_background() {
     if let Some(action) = policy.choose_kill(&apps) {
         actor.execute(&action).unwrap();
     }
-    std::thread::sleep(Duration::from_millis(100));
+    std::thread::sleep(Duration::from_millis(200));
     assert!(event_log.events().iter().any(|e| matches!(
         e,
         Event::AppKilled { cgroup } if cgroup.contains("background.scope")
     )));
-    assert!(!Path::new(&format!("/proc/{bg_pid}")).exists());
+    let status = cg.children[1].try_wait().unwrap();
+    assert!(status.is_some(), "background process should have exited after kill");
 
     // Drop cleans up the shell scope.
     drop(cg);
