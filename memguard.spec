@@ -26,14 +26,12 @@ install -D -p -m 0755 memguard/target/release/memguard %{buildroot}%{_bindir}/me
 install -D -p -m 0644 memguard.service %{buildroot}%{_unitdir}/memguard.service
 install -D -p -m 0644 dbus/memguard.conf %{buildroot}%{_datadir}/dbus-1/system.d/memguard.conf
 install -D -p -m 0644 config.toml %{buildroot}%{_sysconfdir}/memguard/config.toml
-install -D -p -m 0644 README.md %{buildroot}%{_docdir}/%{name}/README.md
-install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
+install -d -m 0755 %{buildroot}%{_docdir}/%{name}/docs
+cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 install -D -p -m 0755 system-tune/memguard-system-tune %{buildroot}%{_bindir}/memguard-system-tune
 install -D -p -m 0644 system-tune/memguard-system-tune.service %{buildroot}%{_unitdir}/memguard-system-tune.service
 install -D -p -m 0644 system-tune/README.md %{buildroot}%{_docdir}/%{name}-system-tune/README.md
 install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}-system-tune/LICENSE
-install -d -m 0755 %{buildroot}%{_docdir}/%{name}/docs
-cp -r docs/* %{buildroot}%{_docdir}/%{name}/docs/
 
 %post
 %systemd_post memguard.service
