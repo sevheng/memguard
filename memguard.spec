@@ -32,6 +32,7 @@ install -D -p -m 0755 system-tune/memguard-system-tune %{buildroot}%{_bindir}/me
 install -D -p -m 0644 system-tune/memguard-system-tune.service %{buildroot}%{_unitdir}/memguard-system-tune.service
 install -D -p -m 0644 system-tune/README.md %{buildroot}%{_docdir}/%{name}-system-tune/README.md
 install -D -p -m 0644 LICENSE %{buildroot}%{_docdir}/%{name}-system-tune/LICENSE
+install -d -m 0755 %{buildroot}%{_localstatedir}/lib/%{name}-system-tune
 
 %post
 %systemd_post memguard.service
@@ -78,3 +79,4 @@ adds noatime to fstab.
 %{_bindir}/memguard-system-tune
 %{_unitdir}/memguard-system-tune.service
 %{_docdir}/%{name}-system-tune/README.md
+%dir %{_localstatedir}/lib/%{name}-system-tune
