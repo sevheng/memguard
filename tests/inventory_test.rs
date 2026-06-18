@@ -21,8 +21,7 @@ fn make_fake_cgroup(
         let pdir = proc_root.join(pid.to_string());
         fs::create_dir_all(&pdir).unwrap();
         fs::write(pdir.join("comm"), comm).unwrap();
-        fs::write(pdir.join("statm"), format!("0 {} 0 0 0 0 0\n", rss_pages))
-            .unwrap();
+        fs::write(pdir.join("statm"), format!("0 {} 0 0 0 0 0\n", rss_pages)).unwrap();
     }
 }
 

@@ -81,7 +81,9 @@ fn test_critical_pressure_protects_active_window() {
 
     let policy = Policy::new(true);
     let actions = policy.decide(PressureLevel::Critical, &apps, &[]);
-    assert!(actions.iter().any(|a| matches!(a, Action::Shield { pid: 2000 })));
+    assert!(actions
+        .iter()
+        .any(|a| matches!(a, Action::Shield { pid: 2000 })));
     assert!(actions.iter().any(|a| matches!(
         a,
         Action::Freeze { cgroup } if cgroup.ends_with("bg.scope")

@@ -1,5 +1,8 @@
 [Unit]
 Description=One-time memguard system tuning
+After=local-fs.target
+ConditionPathExists=!/var/lib/memguard-system-tune/done
+
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/memguard-system-tune

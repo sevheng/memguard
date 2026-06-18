@@ -46,9 +46,7 @@ fn parse_session_file(content: &str) -> std::collections::HashMap<String, String
     content
         .lines()
         .filter_map(|line| {
-            let mut parts = line.splitn(2, '=');
-            let key = parts.next()?;
-            let value = parts.next()?;
+            let (key, value) = line.split_once('=')?;
             Some((key.to_string(), value.to_string()))
         })
         .collect()
@@ -65,7 +63,9 @@ async fn find_shell_pid(uid: u32, _leader: u32) -> Option<u32> {
 }
 
 fn find_pid_by_comm(dir: &std::path::Path, names: &[&str]) -> Option<u32> {
-    let Ok(entries) = std::fs::read_dir(dir) else { return None };
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return None;
+    };
     for entry in entries.flatten() {
         let path = entry.path();
         if path.is_dir() {

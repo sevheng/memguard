@@ -147,7 +147,10 @@ fn stress_test_protects_shell_and_freezes_background() {
         Event::AppKilled { cgroup } if cgroup.contains("background.scope")
     )));
     let status = cg.children[1].try_wait().unwrap();
-    assert!(status.is_some(), "background process should have exited after kill");
+    assert!(
+        status.is_some(),
+        "background process should have exited after kill"
+    );
 
     // Drop cleans up the shell scope.
     drop(cg);

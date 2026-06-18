@@ -10,10 +10,7 @@ pub struct Actor {
 }
 
 impl Actor {
-    pub fn new(
-        cgroup_root: impl Into<std::path::PathBuf>,
-        event_log: Arc<dyn EventLog>,
-    ) -> Self {
+    pub fn new(cgroup_root: impl Into<std::path::PathBuf>, event_log: Arc<dyn EventLog>) -> Self {
         Self {
             cgroup_root: cgroup_root.into(),
             event_log,

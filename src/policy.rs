@@ -64,8 +64,8 @@ impl Policy {
             .filter(|a| a.class == AppClass::Background)
             .collect();
         candidates.sort_by(|a, b| b.rss_bytes.cmp(&a.rss_bytes));
-        candidates
-            .first()
-            .map(|a| Action::Kill { cgroup: a.cgroup_path.clone() })
+        candidates.first().map(|a| Action::Kill {
+            cgroup: a.cgroup_path.clone(),
+        })
     }
 }

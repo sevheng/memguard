@@ -92,7 +92,7 @@ impl Inventory {
         let app_id = self
             .leading_process_name(&pids)
             .unwrap_or_else(|| cgroup_name.to_string());
-        let class = if shell_pid.map_or(false, |pid| pids.contains(&pid))
+        let class = if shell_pid.is_some_and(|pid| pids.contains(&pid))
             || self.shell_names.contains(&app_id)
         {
             AppClass::Shell
@@ -136,8 +136,7 @@ impl Inventory {
         if let Some(cgroup) = Self::find_cgroup_for_pid(cgroup_root, pid) {
             let pids = read_pids(&cgroup);
             if pids.contains(&pid) {
-                return Ok(Self::leading_process_name_for_pids(proc_root, &pids)
-                    .unwrap_or(comm));
+                return Ok(Self::leading_process_name_for_pids(proc_root, &pids).unwrap_or(comm));
             }
         }
 
@@ -149,7 +148,9 @@ impl Inventory {
     }
 
     fn scan_dir_for_pid(dir: &Path, pid: u32) -> Option<PathBuf> {
-        let Ok(entries) = std::fs::read_dir(dir) else { return None };
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return None;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
             if path.is_dir() {

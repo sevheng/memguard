@@ -120,4 +120,7 @@ else
     WARN "/etc/fstab not found"
 fi
 
+mkdir -p /var/lib/memguard-system-tune
+touch /var/lib/memguard-system-tune/done
+
 LOG "system tuning complete"

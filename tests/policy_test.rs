@@ -35,7 +35,9 @@ fn test_policy_critical_shields_and_freezes() {
         app("bg", AppClass::Background, vec![2], 200),
     ];
     let actions = policy.decide(PressureLevel::Critical, &apps, &[]);
-    assert!(actions.iter().any(|a| matches!(a, Action::Shield { pid: 1 })));
+    assert!(actions
+        .iter()
+        .any(|a| matches!(a, Action::Shield { pid: 1 })));
     assert!(actions.iter().any(|a| matches!(
         a,
         Action::Freeze { cgroup } if cgroup.ends_with("bg")

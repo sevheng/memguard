@@ -4,13 +4,7 @@ pub async fn active_pid(bus_address: &str) -> anyhow::Result<u32> {
     let address: Address = bus_address.parse()?;
     let conn = zbus::ConnectionBuilder::address(address)?.build().await?;
 
-    let kwin_proxy = zbus::Proxy::new(
-        &conn,
-        "org.kde.KWin",
-        "/KWin",
-        "org.kde.KWin",
-    )
-    .await?;
+    let kwin_proxy = zbus::Proxy::new(&conn, "org.kde.KWin", "/KWin", "org.kde.KWin").await?;
 
     let uuid: String = kwin_proxy.get_property("activeWindow").await?;
 

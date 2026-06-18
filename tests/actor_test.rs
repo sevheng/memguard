@@ -21,7 +21,10 @@ fn test_actor_freezes_cgroup() {
 
     let val = fs::read_to_string(cgroup.join("cgroup.freeze")).unwrap();
     assert_eq!(val.trim(), "1");
-    assert!(log.events().iter().any(|e| matches!(e, Event::AppFrozen { .. })));
+    assert!(log
+        .events()
+        .iter()
+        .any(|e| matches!(e, Event::AppFrozen { .. })));
 }
 
 #[test]
@@ -41,5 +44,8 @@ fn test_actor_throttles_cpu() {
 
     let val = fs::read_to_string(cgroup.join("cpu.max")).unwrap();
     assert_eq!(val.trim(), "50000 100000");
-    assert!(log.events().iter().any(|e| matches!(e, Event::AppThrottled { .. })));
+    assert!(log
+        .events()
+        .iter()
+        .any(|e| matches!(e, Event::AppThrottled { .. })));
 }
