@@ -6,3 +6,7 @@
 /debian/*.postrm.debhelper
 /debian/memguard/
 /debian/memguard-system-tune/
+
+# Bundled ananicy-cpp build artifacts
+/system-tune/ananicy-cpp/ananicy-cpp
+/system-tune/ananicy-cpp/.build/
