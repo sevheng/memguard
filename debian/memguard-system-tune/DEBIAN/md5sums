@@ -1,0 +1,6 @@
+07618507e1518a07b4aa17c36fcc8e8b  lib/systemd/system/memguard-system-tune.service
+85d5caca442debc7b1a9568a660a0ec6  usr/bin/memguard-system-tune
+ca69d85f01dbddacb7502a4a4295f8c7  usr/share/doc/memguard-system-tune/LICENSE
+8286720cfaf579c63ec27f72a393b265  usr/share/doc/memguard-system-tune/README.md
+3189599802c97c2889452e71bd6f427c  usr/share/doc/memguard-system-tune/changelog.Debian.gz
+369657fb2750e94a885c170d82aa84d2  usr/share/doc/memguard-system-tune/copyright

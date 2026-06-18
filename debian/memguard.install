@@ -1,0 +1,6 @@
+target/release/memguard usr/bin/
+config.toml etc/memguard/
+dbus/memguard.conf usr/share/dbus-1/system.d/
+README.md usr/share/doc/memguard/
+LICENSE usr/share/doc/memguard/
+docs/* usr/share/doc/memguard/docs/

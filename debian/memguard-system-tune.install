@@ -1,0 +1,3 @@
+system-tune/memguard-system-tune usr/bin/
+system-tune/README.md usr/share/doc/memguard-system-tune/
+LICENSE usr/share/doc/memguard-system-tune/
