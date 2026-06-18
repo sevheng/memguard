@@ -29,7 +29,6 @@ if command -v systemctl >/dev/null 2>&1; then
          ! [[ -x /usr/lib/systemd/zram-generator ]]; then
         WARN "systemd-zram-generator not installed; skipping zram setup"
     else
-        local ram_kb
         ram_kb=$(total_ram_kb)
         if [[ "$ram_kb" -lt 2097152 ]]; then
             WARN "less than 2 GiB RAM; skipping zram to avoid memory pressure"
@@ -101,12 +100,8 @@ if [[ -f /etc/fstab ]]; then
                 rm -f "$new_fstab"
             fi
         else
-            WARN "findmnt not available; skipping fstab verification"
-            backup=/etc/fstab.memguard-backup-$(date +%Y%m%d%H%M%S)
-            cp /etc/fstab "$backup"
-            LOG "backed up /etc/fstab to $backup"
-            mv "$new_fstab" /etc/fstab
-            LOG "updated /etc/fstab with noatime where needed"
+            WARN "findmnt not available; skipping fstab update to avoid unverified changes"
+            rm -f "$new_fstab"
         fi
     fi
 else
