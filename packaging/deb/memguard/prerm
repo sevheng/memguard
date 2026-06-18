@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "remove" ] || [ "$1" = "upgrade" ]; then
+    if [ -d /run/systemd/system ]; then
+        systemctl stop memguard.service >/dev/null || true
+        systemctl disable memguard.service >/dev/null || true
+    fi
+fi

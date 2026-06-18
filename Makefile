@@ -1,21 +1,16 @@
-VERSION := 0.1.0
-RELEASE := 1
-
-RPMBUILD := $(HOME)/rpmbuild
-
-.PHONY: all rpm srpm clean
+.PHONY: all deb rpm clean
 
 all:
-	cargo build --release -p memguard
+	cargo build --release
 
-srpm:
-	mkdir -p $(RPMBUILD)/SOURCES $(RPMBUILD)/SRPMS
-	git archive --prefix=memguard-$(VERSION)/ HEAD | gzip > $(RPMBUILD)/SOURCES/memguard-$(VERSION).tar.gz
-	rpmbuild -bs --define "_topdir $(RPMBUILD)" memguard.spec
+deb: all
+	cargo deb --no-build
+	cargo deb --no-build --variant system-tune
 
-rpm: srpm
-	rpmbuild --rebuild $(RPMBUILD)/SRPMS/memguard-$(VERSION)-$(RELEASE)*.src.rpm
+rpm: all
+	cargo generate-rpm
+	cargo generate-rpm --variant system-tune
 
 clean:
-	rm -rf $(RPMBUILD)
 	cargo clean
+	rm -rf target/debian target/generate-rpm

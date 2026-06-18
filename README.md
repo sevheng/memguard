@@ -36,7 +36,7 @@ sudo systemctl enable --now memguard
 
 ## Installation from local RPMs
 
-Build the RPMs on a Fedora host:
+Build the RPMs (any Linux host with Rust):
 
 ```bash
 make rpm
@@ -45,25 +45,22 @@ make rpm
 Then install:
 
 ```bash
-sudo dnf install \
-  ~/rpmbuild/RPMS/x86_64/memguard-*.rpm \
-  ~/rpmbuild/RPMS/noarch/memguard-system-tune-*.rpm
+sudo dnf install ./target/generate-rpm/memguard-*.rpm
 sudo systemctl enable --now memguard
 ```
 
 ## Installation from .deb (Ubuntu / Debian)
 
-Build the packages on a Debian/Ubuntu host:
+Build the packages (any Linux host with Rust):
 
 ```bash
-sudo apt install build-essential debhelper devscripts cargo rustc
-dpkg-buildpackage -us -uc -b
+make deb
 ```
 
 Then install:
 
 ```bash
-sudo apt install ../memguard_*.deb ../memguard-system-tune_*.deb
+sudo apt install ./target/debian/memguard_*.deb ./target/debian/memguard-system-tune_*.deb
 sudo systemctl enable --now memguard
 ```
 

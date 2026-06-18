@@ -1,0 +1,49 @@
+name: packages
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust toolchain and dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install packaging tools
+        run: |
+          cargo install cargo-deb --locked
+          cargo install cargo-generate-rpm --locked
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Build Debian packages
+        run: |
+          cargo deb --no-build
+          cargo deb --no-build --variant system-tune
+
+      - name: Build RPM packages
+        run: |
+          cargo generate-rpm
+          cargo generate-rpm --variant system-tune
+
+      - name: Upload Debian packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: debs
+          path: target/debian/*.deb
+
+      - name: Upload RPM packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpms
+          path: target/generate-rpm/*.rpm
