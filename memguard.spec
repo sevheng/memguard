@@ -8,6 +8,7 @@ Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  rust
 BuildRequires:  cargo
+BuildRequires:  gcc
 BuildRequires:  systemd-rpm-macros
 
 %description
@@ -18,11 +19,10 @@ mitigations (freeze / kill) to protect the active shell and foreground app.
 %autosetup -n %{name}-%{version}
 
 %build
-cd memguard
 cargo build --release
 
 %install
-install -D -p -m 0755 memguard/target/release/memguard %{buildroot}%{_bindir}/memguard
+install -D -p -m 0755 target/release/memguard %{buildroot}%{_bindir}/memguard
 install -D -p -m 0644 memguard.service %{buildroot}%{_unitdir}/memguard.service
 install -D -p -m 0644 dbus/memguard.conf %{buildroot}%{_datadir}/dbus-1/system.d/memguard.conf
 install -D -p -m 0644 config.toml %{buildroot}%{_sysconfdir}/memguard/config.toml
