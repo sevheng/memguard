@@ -1,6 +1,10 @@
 [pressure]
 poll_ms = 500
 
+[memory]
+mem_available_critical_pct = 5.0
+swap_free_critical_pct = 10.0
+
 [policy]
 freeze_on_critical = true
 kill_delay_seconds = 5

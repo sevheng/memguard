@@ -1,9 +1,12 @@
+use crate::memory::MemoryConfig;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
     pub pressure: PressureConfig,
+    #[serde(default)]
+    pub memory: MemoryConfig,
     #[serde(default)]
     pub policy: PolicyConfig,
     #[serde(default)]
@@ -89,6 +92,7 @@ impl Default for Config {
                 critical_some_avg10: 70.0,
                 critical_full_avg10: 50.0,
             },
+            memory: MemoryConfig::default(),
             policy: PolicyConfig {
                 freeze_on_critical: true,
                 kill_delay_seconds: 5,

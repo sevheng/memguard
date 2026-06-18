@@ -3,6 +3,7 @@ use memguard::config::Config;
 use memguard::desktop::Desktop;
 use memguard::events::{Event, EventLog, FileEventLog, NullEventLog};
 use memguard::inventory::Inventory;
+use memguard::memory::MemoryMonitor;
 use memguard::policy::{Action, Policy};
 use memguard::pressure::{PressureLevel, PressureMonitor};
 use std::path::PathBuf;
@@ -34,6 +35,7 @@ async fn main() -> anyhow::Result<()> {
         config.pressure.critical_some_avg10,
         config.pressure.critical_full_avg10,
     );
+    let memory = MemoryMonitor::new("/proc/meminfo", config.memory);
     let desktop = Desktop::new(&config.desktop.session_dir);
     let inventory = Inventory::new("/sys/fs/cgroup", "/proc");
     let actor = Actor::new("/sys/fs/cgroup", event_log.clone());
@@ -48,9 +50,18 @@ async fn main() -> anyhow::Result<()> {
 
         let state = desktop.discover().await;
         let apps = inventory.scan(state.active_app_id.as_deref(), state.shell_pid);
-        let level = pressure.level();
+        let pressure_level = pressure.level();
+        let memory_critical = memory.critical();
+        let level = if memory_critical {
+            PressureLevel::Critical
+        } else {
+            pressure_level
+        };
 
-        info!("pressure={:?} apps={}", level, apps.len());
+        info!(
+            "pressure={:?} memory_critical={} apps={}",
+            pressure_level, memory_critical, apps.len()
+        );
         event_log.log(Event::PressureChanged {
             level: format!("{:?}", level),
         });
