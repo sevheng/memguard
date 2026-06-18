@@ -9,10 +9,16 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# 1. I/O scheduler -> bfq
+# 1. I/O scheduler -> bfq (skip NVMe and virtual devices; bfq can panic some NVMe drives)
 for sched in /sys/block/*/queue/scheduler; do
     if [[ -f "$sched" ]]; then
         dev="$(basename "$(dirname "$sched")")"
+        case "$dev" in
+            nvme*|loop*|dm-*|zram*)
+                LOG "$dev not suitable for bfq; skipping"
+                continue
+                ;;
+        esac
         if grep -q 'bfq' "$sched"; then
             if echo bfq > "$sched" 2>/dev/null; then
                 LOG "set $dev scheduler to bfq"
