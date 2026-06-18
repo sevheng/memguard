@@ -1,3 +1,8 @@
-/target/
-memguard/target/
-
+/target
+/debian/.debhelper
+/debian/debhelper-build-stamp
+/debian/files
+/debian/*.substvars
+/debian/*.postrm.debhelper
+/debian/memguard/
+/debian/memguard-system-tune/

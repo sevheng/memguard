@@ -1,8 +1,0 @@
-./target/release/memguard
-./config.toml
-./dbus/memguard.conf
-./README.md
-./LICENSE
-./docs/architecture.md
-./docs/test-report-template.md
-./docs/user-guide.md
