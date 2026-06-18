@@ -5,7 +5,7 @@ use memguard::events::{Event, EventLog, FileEventLog, NullEventLog};
 use memguard::inventory::Inventory;
 use memguard::memory::MemoryMonitor;
 use memguard::policy::{Action, Policy};
-use memguard::pressure::{PressureLevel, PressureMonitor};
+use memguard::pressure::{PressureLevel, PressureMonitor, PressureWatcher};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -29,13 +29,19 @@ async fn main() -> anyhow::Result<()> {
         }
     };
 
-    let pressure = PressureMonitor::new(
+    let mut pressure_watcher = PressureWatcher::new(
+        "/proc/pressure/memory",
+        config.pressure.warning_some_avg10,
+        config.pressure.critical_some_avg10,
+        config.pressure.critical_full_avg10,
+    )?;
+    let pressure_reader = PressureMonitor::new(
         "/proc/pressure/memory",
         config.pressure.warning_some_avg10,
         config.pressure.critical_some_avg10,
         config.pressure.critical_full_avg10,
     );
-    let memory = MemoryMonitor::new("/proc/meminfo", config.memory);
+    let memory = MemoryMonitor::new("/proc/meminfo", config.memory.clone());
     let desktop = Desktop::new(&config.desktop.session_dir);
     let inventory = Inventory::new("/sys/fs/cgroup", "/proc");
     let actor = Actor::new("/sys/fs/cgroup", event_log.clone());
@@ -43,59 +49,110 @@ async fn main() -> anyhow::Result<()> {
 
     let mut frozen: Vec<PathBuf> = Vec::new();
     let mut warning_start: Option<tokio::time::Instant> = None;
-    let mut tick = interval(Duration::from_millis(config.pressure.poll_ms));
+    let mut discovery_tick = interval(Duration::from_secs(2));
 
     loop {
-        tick.tick().await;
-
-        let state = desktop.discover().await;
-        let apps = inventory.scan(state.active_app_id.as_deref(), state.shell_pid);
-        let pressure_level = pressure.level();
-        let memory_critical = memory.critical();
-        let level = if memory_critical {
-            PressureLevel::Critical
-        } else {
-            pressure_level
+        let state = tokio::select! {
+            Some(pressure_level) = pressure_watcher.wait() => {
+                // PSI event woke us up; discover current desktop state and use
+                // the event-driven pressure level.
+                let state = desktop.discover().await;
+                handle_tick(
+                    pressure_level,
+                    &state,
+                    &inventory,
+                    &memory,
+                    &actor,
+                    &policy,
+                    &config,
+                    event_log.as_ref(),
+                    &mut frozen,
+                    &mut warning_start,
+                )
+                .await;
+                continue;
+            }
+            _ = discovery_tick.tick() => {
+                // Periodic desktop discovery and fallback poll.
+                desktop.discover().await
+            }
         };
 
-        info!(
-            "pressure={:?} memory_critical={} apps={}",
-            pressure_level, memory_critical, apps.len()
-        );
-        event_log.log(Event::PressureChanged {
-            level: format!("{:?}", level),
-        });
+        let pressure_level = pressure_reader.level();
+        handle_tick(
+            pressure_level,
+            &state,
+            &inventory,
+            &memory,
+            &actor,
+            &policy,
+            &config,
+            event_log.as_ref(),
+            &mut frozen,
+            &mut warning_start,
+        )
+        .await;
+    }
+}
 
-        match level {
-            PressureLevel::Normal => {
-                warning_start = None;
-                for cgroup in frozen.drain(..) {
-                    let _ = actor.execute(&Action::Unfreeze { cgroup });
-                }
+#[allow(clippy::too_many_arguments)]
+async fn handle_tick(
+    pressure_level: PressureLevel,
+    state: &memguard::desktop::DesktopState,
+    inventory: &Inventory,
+    memory: &MemoryMonitor,
+    actor: &Actor,
+    policy: &Policy,
+    config: &Config,
+    event_log: &dyn EventLog,
+    frozen: &mut Vec<PathBuf>,
+    warning_start: &mut Option<tokio::time::Instant>,
+) {
+    let apps = inventory.scan(state.active_app_id.as_deref(), state.shell_pid);
+    let memory_critical = memory.critical();
+    let level = if memory_critical {
+        PressureLevel::Critical
+    } else {
+        pressure_level
+    };
+
+    info!(
+        "pressure={:?} memory_critical={} apps={}",
+        pressure_level, memory_critical, apps.len()
+    );
+    event_log.log(Event::PressureChanged {
+        level: format!("{:?}", level),
+    });
+
+    match level {
+        PressureLevel::Normal => {
+            *warning_start = None;
+            for cgroup in frozen.drain(..) {
+                let _ = actor.execute(&Action::Unfreeze { cgroup });
             }
-            PressureLevel::Warning => {
-                warning_start = None;
-                for action in policy.decide(level, &apps, &frozen) {
-                    let _ = actor.execute(&action);
-                }
+        }
+        PressureLevel::Warning => {
+            *warning_start = None;
+            for action in policy.decide(level, &apps, frozen) {
+                let _ = actor.execute(&action);
             }
-            PressureLevel::Critical => {
-                for action in policy.decide(level, &apps, &frozen) {
-                    if let Action::Freeze { ref cgroup } = action {
-                        frozen.push(cgroup.clone());
-                    }
+        }
+        PressureLevel::Critical => {
+            for action in policy.decide(level, &apps, frozen) {
+                if let Action::Freeze { ref cgroup } = action {
+                    frozen.push(cgroup.clone());
+                }
+                let _ = actor.execute(&action);
+            }
+            if warning_start.is_none() {
+                *warning_start = Some(tokio::time::Instant::now());
+            }
+            if warning_start.unwrap().elapsed()
+                >= Duration::from_secs(config.policy.kill_delay_seconds)
+            {
+                if let Some(action) = policy.choose_kill(&apps) {
+                    warn!("killing cgroup due to sustained critical pressure");
                     let _ = actor.execute(&action);
-                }
-                if warning_start.is_none() {
-                    warning_start = Some(tokio::time::Instant::now());
-                }
-                if warning_start.unwrap().elapsed()
-                    >= Duration::from_secs(config.policy.kill_delay_seconds)
-                {
-                    if let Some(action) = policy.choose_kill(&apps) {
-                        warn!("killing cgroup due to sustained critical pressure");
-                        let _ = actor.execute(&action);
-                    }
                 }
             }
         }
