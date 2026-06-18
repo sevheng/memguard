@@ -27,6 +27,16 @@ One-time static system tuning for low-end Linux desktops running memguard.
 `ananicy-cpp` is configured to leave `memguard` and the desktop shell (`gnome-shell`,
 `kwin_wayland`, `kwin_x11`) at neutral priority so they are not throttled.
 
+It also creates `/etc/sysctl.d/99-memguard-system-tune.conf` once with
+CachyOS-inspired vm and network tunings:
+
+- `vm.swappiness = 100` — works well with zram.
+- `vm.vfs_cache_pressure = 50` — keep filesystem cache longer.
+- `vm.dirty_ratio = 10` and `vm.dirty_background_ratio = 5` — smoother writeback.
+- `net.ipv4.tcp_congestion_control = bbr` — only if the kernel supports BBR.
+
+To undo the sysctl changes, remove the file and run `sudo sysctl --system`.
+
 ## Usage
 
 The tuning runs automatically once on first boot after the package is installed.
