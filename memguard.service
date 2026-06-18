@@ -1,6 +1,7 @@
 [Unit]
 Description=memguard desktop memory pressure daemon
-After=systemd-logind.service
+After=systemd-logind.service dbus.service
+Wants=dbus.service
 
 [Service]
 Type=simple
