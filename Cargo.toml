@@ -44,15 +44,19 @@ assets = [
 
 [package.metadata.deb.variants.system-tune]
 depends = "$auto, systemd, util-linux"
-recommends = "ananicy-cpp"
 maintainer-scripts = "packaging/deb/system-tune"
+conf-files = ["/etc/ananicy.d/ananicy.conf"]
 extended-description = """\
 One-time system tuning helper for low-end desktops using memguard. Sets the
-I/O scheduler to bfq, enables ananicy-cpp, configures zram, runs fstrim, and
-adds noatime to fstab."""
+I/O scheduler to bfq, enables the bundled ananicy-cpp service, configures zram,
+runs fstrim, and adds noatime to fstab."""
 assets = [
     ["system-tune/memguard-system-tune", "usr/bin/", "755"],
     ["system-tune/memguard-system-tune.service", "lib/systemd/system/", "644"],
+    ["system-tune/ananicy-cpp/ananicy-cpp", "usr/bin/", "755"],
+    ["system-tune/ananicy-cpp/ananicy-cpp.service", "lib/systemd/system/", "644"],
+    ["system-tune/ananicy-cpp/ananicy.conf", "etc/ananicy.d/", "644"],
+    ["system-tune/ananicy-cpp/rules/*", "etc/ananicy.d/", "644"],
     ["system-tune/README.md", "usr/share/doc/memguard-system-tune/", "644"],
     ["LICENSE", "usr/share/doc/memguard-system-tune/", "644"],
 ]
@@ -79,6 +83,12 @@ summary = "Static system tuning for memguard desktops"
 assets = [
     { source = "system-tune/memguard-system-tune", dest = "/usr/bin/memguard-system-tune", mode = "0755" },
     { source = "system-tune/memguard-system-tune.service", dest = "/usr/lib/systemd/system/memguard-system-tune.service", mode = "0644" },
+    { source = "system-tune/ananicy-cpp/ananicy-cpp", dest = "/usr/bin/ananicy-cpp", mode = "0755" },
+    { source = "system-tune/ananicy-cpp/ananicy-cpp.service", dest = "/usr/lib/systemd/system/ananicy-cpp.service", mode = "0644" },
+    { source = "system-tune/ananicy-cpp/ananicy.conf", dest = "/etc/ananicy.d/ananicy.conf", mode = "0644", config = "noreplace" },
+    { source = "system-tune/ananicy-cpp/rules/00-types.types", dest = "/etc/ananicy.d/00-types.types", mode = "0644" },
+    { source = "system-tune/ananicy-cpp/rules/00-cgroups.cgroups", dest = "/etc/ananicy.d/00-cgroups.cgroups", mode = "0644" },
+    { source = "system-tune/ananicy-cpp/rules/00-default.rules", dest = "/etc/ananicy.d/00-default.rules", mode = "0644" },
     { source = "system-tune/README.md", dest = "/usr/share/doc/memguard-system-tune/README.md", mode = "0644", doc = true },
     { source = "LICENSE", dest = "/usr/share/doc/memguard-system-tune/LICENSE", mode = "0644", doc = true },
 ]
@@ -88,6 +98,3 @@ pre_uninstall_script = "packaging/rpm/system-tune-preun.sh"
 [package.metadata.generate-rpm.variants.system-tune.requires]
 systemd = "*"
 util-linux = "*"
-
-[package.metadata.generate-rpm.variants.system-tune.recommends]
-ananicy-cpp = "*"
