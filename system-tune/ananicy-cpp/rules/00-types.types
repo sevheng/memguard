@@ -1,0 +1,8 @@
+# Minimal ananicy-cpp types
+{"type":"audio-server", "nice":-5}
+{"type":"browser"}
+{"type":"compiler", "nice":5, "ionice":5}
+{"type":"file-sync", "nice":10, "ionice":7}
+{"type":"game", "nice":-5}
+{"type":"package-manager", "nice":5, "ionice":5}
+{"type":"service"}

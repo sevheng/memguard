@@ -1,0 +1,20 @@
+# Audio servers
+{ "name": "pipewire", "type": "audio-server" }
+{ "name": "pulseaudio", "type": "audio-server" }
+
+# Web browsers
+{ "name": "firefox", "type": "browser" }
+{ "name": "chromium", "type": "browser" }
+{ "name": "chrome", "type": "browser" }
+
+# Package managers and build tools
+{ "name": "dpkg", "type": "package-manager" }
+{ "name": "rpm", "type": "package-manager" }
+{ "name": "cc", "type": "compiler" }
+{ "name": "gcc", "type": "compiler" }
+{ "name": "clang", "type": "compiler" }
+{ "name": "make", "type": "compiler" }
+
+# Background file sync
+{ "name": "syncthing", "type": "file-sync" }
+{ "name": "rclone", "type": "file-sync" }
