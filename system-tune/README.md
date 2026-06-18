@@ -11,7 +11,7 @@ One-time static system tuning for low-end Linux desktops running memguard.
 ## What it does
 
 - Sets the I/O scheduler to `bfq` for block devices that support it.
-- On `dnf`-based distributions, installs and enables `ananicy-cpp`.
+- Enables the bundled `ananicy-cpp` service for process niceness/IO tuning.
 - Enables `zram` swap via `systemd-zram-generator`.
 - Runs `fstrim`.
 - Adds `noatime` to ext4/xfs/btrfs entries in `/etc/fstab`.
