@@ -8,6 +8,11 @@ total_ram_kb() {
     awk '/MemTotal:/ {print $2}' /proc/meminfo
 }
 
+kernel_supports_bbr() {
+    [[ -f /proc/sys/net/ipv4/tcp_available_congestion_control ]] && \
+        grep -q 'bbr' /proc/sys/net/ipv4/tcp_available_congestion_control
+}
+
 if [[ $EUID -ne 0 ]]; then
     echo "memguard-system-tune must be run as root" >&2
     exit 1
@@ -53,7 +58,30 @@ else
     WARN "systemctl not available; skipping zram setup"
 fi
 
-# 3. fstrim
+# 3. CachyOS-style vm/network sysctl tunings
+SYSCTL_CONF=/etc/sysctl.d/99-memguard-system-tune.conf
+if [[ -f "$SYSCTL_CONF" ]]; then
+    LOG "$SYSCTL_CONF already exists; skipping sysctl tuning"
+else
+    {
+        echo "# memguard-system-tune desktop tunings"
+        echo "vm.swappiness = 100"
+        echo "vm.vfs_cache_pressure = 50"
+        echo "vm.dirty_ratio = 10"
+        echo "vm.dirty_background_ratio = 5"
+        if kernel_supports_bbr; then
+            echo "net.ipv4.tcp_congestion_control = bbr"
+        fi
+    } > "$SYSCTL_CONF"
+    LOG "created $SYSCTL_CONF"
+    if sysctl --system >/dev/null 2>&1; then
+        LOG "applied sysctl settings"
+    else
+        WARN "failed to apply sysctl settings immediately"
+    fi
+fi
+
+# 4. fstrim
 if command -v fstrim >/dev/null 2>&1; then
     if fstrim -a >/dev/null 2>&1; then
         LOG "fstrim completed"
@@ -64,7 +92,7 @@ else
     WARN "fstrim not available"
 fi
 
-# 4. fstab noatime
+# 5. fstab noatime
 if [[ -f /etc/fstab ]]; then
     new_fstab=/etc/fstab.memguard-new
     awk '
