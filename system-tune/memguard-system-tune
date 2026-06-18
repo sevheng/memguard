@@ -4,6 +4,10 @@ set -euo pipefail
 LOG() { echo "[memguard-system-tune]" "$*"; }
 WARN() { echo "[memguard-system-tune] WARN:" "$*" >&2; }
 
+total_ram_kb() {
+    awk '/MemTotal:/ {print $2}' /proc/meminfo
+}
+
 if [[ $EUID -ne 0 ]]; then
     echo "memguard-system-tune must be run as root" >&2
     exit 1
@@ -21,20 +25,29 @@ if command -v systemctl >/dev/null 2>&1; then
     ZRAM_CONF=/etc/systemd/zram-generator.conf
     if [[ -f "$ZRAM_CONF" ]]; then
         LOG "$ZRAM_CONF already exists; skipping zram setup"
+    elif ! [[ -x /usr/lib/systemd/systemd-zram-generator ]] && \
+         ! [[ -x /usr/lib/systemd/zram-generator ]]; then
+        WARN "systemd-zram-generator not installed; skipping zram setup"
     else
-        mkdir -p /etc/systemd
-        cat > "$ZRAM_CONF" <<'EOF'
+        local ram_kb
+        ram_kb=$(total_ram_kb)
+        if [[ "$ram_kb" -lt 2097152 ]]; then
+            WARN "less than 2 GiB RAM; skipping zram to avoid memory pressure"
+        else
+            mkdir -p /etc/systemd
+            cat > "$ZRAM_CONF" <<'EOF'
 [zram0]
 zram-size = ram / 2
 compression-algorithm = zstd
 EOF
-        LOG "created $ZRAM_CONF"
-        systemctl daemon-reload || true
-        if systemctl start systemd-zram-setup@zram0.service 2>/dev/null || \
-           systemctl restart systemd-zram-setup@zram0.service 2>/dev/null; then
-            LOG "started zram0"
-        else
-            WARN "failed to start zram0"
+            LOG "created $ZRAM_CONF"
+            systemctl daemon-reload || true
+            if systemctl start systemd-zram-setup@zram0.service 2>/dev/null || \
+               systemctl restart systemd-zram-setup@zram0.service 2>/dev/null; then
+                LOG "started zram0"
+            else
+                WARN "failed to start zram0"
+            fi
         fi
     fi
 else
