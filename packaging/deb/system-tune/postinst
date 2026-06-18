@@ -5,5 +5,8 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
     if [ -d /run/systemd/system ]; then
         systemctl --system daemon-reload >/dev/null || true
         systemctl enable memguard-system-tune.service >/dev/null || true
+        if [ -f /var/lib/memguard-system-tune/done ]; then
+            systemctl enable --now ananicy-cpp.service >/dev/null || true
+        fi
     fi
 fi

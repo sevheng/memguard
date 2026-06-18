@@ -5,5 +5,7 @@ if [ "$1" = "remove" ] || [ "$1" = "upgrade" ]; then
     if [ -d /run/systemd/system ]; then
         systemctl stop memguard-system-tune.service >/dev/null || true
         systemctl disable memguard-system-tune.service >/dev/null || true
+        systemctl stop ananicy-cpp.service >/dev/null || true
+        systemctl disable ananicy-cpp.service >/dev/null || true
     fi
 fi
