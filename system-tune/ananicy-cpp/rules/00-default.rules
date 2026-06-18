@@ -18,3 +18,9 @@
 # Background file sync
 { "name": "syncthing", "type": "file-sync" }
 { "name": "rclone", "type": "file-sync" }
+
+# Keep memory daemon and desktop shell at neutral priority
+{ "name": "memguard", "type": "service" }
+{ "name": "gnome-shell", "type": "service" }
+{ "name": "kwin_wayland", "type": "service" }
+{ "name": "kwin_x11", "type": "service" }
