@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  srpm:
+  rpm:
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
@@ -14,13 +14,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install build tools
-        run: dnf install -y make git rpm-build rpmdevtools
+        run: dnf install -y make git rpm-build rpmdevtools rust cargo gcc systemd-rpm-macros
 
       - name: Build SRPM
         run: make srpm
+
+      - name: Build binary RPMs
+        run: |
+          SRPM=$(find ~/rpmbuild/SRPMS -maxdepth 1 -name 'memguard-*.src.rpm' | head -1)
+          rpmbuild --rebuild "$SRPM"
 
       - name: Upload SRPM
         uses: actions/upload-artifact@v4
         with:
           name: srpm
           path: ~/rpmbuild/SRPMS/*.src.rpm
+
+      - name: Upload binary RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpms
+          path: |
+            ~/rpmbuild/RPMS/x86_64/*.rpm
+            ~/rpmbuild/RPMS/noarch/*.rpm
