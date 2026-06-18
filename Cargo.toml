@@ -50,8 +50,8 @@ maintainer-scripts = "packaging/deb/system-tune"
 conf-files = ["/etc/ananicy.d/ananicy.conf"]
 extended-description = """\
 One-time system tuning helper for low-end desktops using memguard. Enables the
-bundled ananicy-cpp service, configures zram when safe, runs fstrim, and adds
-noatime to fstab."""
+bundled ananicy-cpp service, configures zram when safe, applies CachyOS-style
+sysctl tunings, runs fstrim, and adds noatime to fstab."""
 assets = [
     ["system-tune/memguard-system-tune", "usr/bin/", "755"],
     ["system-tune/memguard-system-tune.service", "lib/systemd/system/", "644"],

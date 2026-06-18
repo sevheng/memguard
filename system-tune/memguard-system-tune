@@ -74,7 +74,7 @@ else
         fi
     } > "$SYSCTL_CONF"
     LOG "created $SYSCTL_CONF"
-    if sysctl --system >/dev/null 2>&1; then
+    if sysctl -p "$SYSCTL_CONF" >/dev/null 2>&1; then
         LOG "applied sysctl settings"
     else
         WARN "failed to apply sysctl settings immediately"
