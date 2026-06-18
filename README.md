@@ -51,6 +51,22 @@ sudo dnf install \
 sudo systemctl enable --now memguard
 ```
 
+## Installation from .deb (Ubuntu / Debian)
+
+Build the packages on a Debian/Ubuntu host:
+
+```bash
+sudo apt install build-essential debhelper devscripts cargo rustc
+dpkg-buildpackage -us -uc -b
+```
+
+Then install:
+
+```bash
+sudo apt install ../memguard_*.deb ../memguard-system-tune_*.deb
+sudo systemctl enable --now memguard
+```
+
 ## Build from source
 
 ```bash
