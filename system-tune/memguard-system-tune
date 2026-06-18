@@ -9,36 +9,14 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# 1. I/O scheduler -> bfq (skip NVMe and virtual devices; bfq can panic some NVMe drives)
-for sched in /sys/block/*/queue/scheduler; do
-    if [[ -f "$sched" ]]; then
-        dev="$(basename "$(dirname "$sched")")"
-        case "$dev" in
-            nvme*|loop*|dm-*|zram*)
-                LOG "$dev not suitable for bfq; skipping"
-                continue
-                ;;
-        esac
-        if grep -q 'bfq' "$sched"; then
-            if echo bfq > "$sched" 2>/dev/null; then
-                LOG "set $dev scheduler to bfq"
-            else
-                WARN "failed to set $dev scheduler to bfq"
-            fi
-        else
-            LOG "$dev does not support bfq; skipping"
-        fi
-    fi
-done
-
-# 2. ananicy-cpp (bundled with this package)
+# 1. ananicy-cpp (bundled with this package)
 if systemctl enable --now ananicy-cpp.service; then
     LOG "enabled ananicy-cpp.service"
 else
     WARN "failed to enable ananicy-cpp.service"
 fi
 
-# 3. zram via systemd-zram-generator
+# 2. zram via systemd-zram-generator
 if command -v systemctl >/dev/null 2>&1; then
     ZRAM_CONF=/etc/systemd/zram-generator.conf
     if [[ -f "$ZRAM_CONF" ]]; then
@@ -63,7 +41,7 @@ else
     WARN "systemctl not available; skipping zram setup"
 fi
 
-# 4. fstrim
+# 3. fstrim
 if command -v fstrim >/dev/null 2>&1; then
     if fstrim -a >/dev/null 2>&1; then
         LOG "fstrim completed"
@@ -74,7 +52,7 @@ else
     WARN "fstrim not available"
 fi
 
-# 5. fstab noatime
+# 4. fstab noatime
 if [[ -f /etc/fstab ]]; then
     new_fstab=/etc/fstab.memguard-new
     awk '
