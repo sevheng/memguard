@@ -14,7 +14,7 @@ srpm:
 	rpmbuild -bs --define "_topdir $(RPMBUILD)" memguard.spec
 
 rpm: srpm
-	rpmbuild --rebuild $(RPMBUILD)/SRPMS/memguard-$(VERSION)-$(RELEASE).*.src.rpm
+	rpmbuild --rebuild $(RPMBUILD)/SRPMS/memguard-$(VERSION)-$(RELEASE)*.src.rpm
 
 clean:
 	rm -rf $(RPMBUILD)
