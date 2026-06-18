@@ -23,8 +23,16 @@ jobs:
           cargo install cargo-deb --locked
           cargo install cargo-generate-rpm --locked
 
+      - name: Install ananicy-cpp build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
       - name: Build release binary
         run: cargo build --release
+
+      - name: Build ananicy-cpp
+        run: bash memguard/system-tune/build-ananicy-cpp.sh
 
       - name: Build Debian packages
         run: |
